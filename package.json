@@ -1,0 +1,21 @@
+{
+  "name": "lifeos-alexa",
+  "version": "1.0.0",
+  "description": "LifeOS for Alexa+ — a self-hosted MCP server (spec 2025-11-25, Streamable HTTP) plus a simulated Alexa+ voice experience.",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node scripts/smoke-test.mjs",
+    "reset": "node scripts/reset-data.mjs",
+    "inspector": "npx @modelcontextprotocol/inspector"
+  },
+  "optionalDependencies": {
+    "@anthropic-ai/sdk": "^0.110.0"
+  },
+  "license": "MIT"
+}

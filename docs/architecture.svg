@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 300" font-family="Segoe UI, system-ui, sans-serif" font-size="13">
+  <rect width="860" height="300" rx="16" fill="#0b1020"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7fdcff"/></marker>
+  </defs>
+
+  <!-- clients -->
+  <rect x="24" y="40" width="200" height="70" rx="12" fill="#142046" stroke="#00caff"/>
+  <text x="124" y="70" fill="#fff" text-anchor="middle" font-weight="600">Alexa+ (real device)</text>
+  <text x="124" y="90" fill="#93a0bd" text-anchor="middle">LLM picks tools</text>
+
+  <rect x="24" y="130" width="200" height="70" rx="12" fill="#142046" stroke="#6b5bff"/>
+  <text x="124" y="158" fill="#fff" text-anchor="middle" font-weight="600">Alexa+ simulator</text>
+  <text x="124" y="178" fill="#93a0bd" text-anchor="middle">src/agent.js · Claude or rules</text>
+
+  <rect x="24" y="220" width="200" height="56" rx="12" fill="#142046" stroke="#2c3a66"/>
+  <text x="124" y="253" fill="#fff" text-anchor="middle">MCP Inspector / any client</text>
+
+  <!-- arrows -->
+  <path d="M224 75 C300 75 300 150 360 150" fill="none" stroke="#7fdcff" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M224 165 L360 160" fill="none" stroke="#7fdcff" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M224 248 C300 248 300 172 360 170" fill="none" stroke="#7fdcff" stroke-width="2" marker-end="url(#a)"/>
+  <text x="292" y="128" fill="#7fdcff" text-anchor="middle" font-size="11">POST /mcp</text>
+  <text x="292" y="142" fill="#7fdcff" text-anchor="middle" font-size="11">JSON-RPC · HTTPS</text>
+
+  <!-- server -->
+  <rect x="360" y="40" width="250" height="236" rx="14" fill="#0f1830" stroke="#00caff" stroke-width="2"/>
+  <text x="485" y="68" fill="#fff" text-anchor="middle" font-weight="700" font-size="15">LifeOS MCP server</text>
+  <text x="485" y="88" fill="#93a0bd" text-anchor="middle">Streamable HTTP · spec 2025-11-25</text>
+  <rect x="380" y="104" width="210" height="44" rx="8" fill="#18213a"/>
+  <text x="485" y="122" fill="#e8ecf7" text-anchor="middle">src/mcp.js</text>
+  <text x="485" y="139" fill="#93a0bd" text-anchor="middle" font-size="11">sessions · version · origin · auth</text>
+  <rect x="380" y="158" width="210" height="44" rx="8" fill="#18213a"/>
+  <text x="485" y="176" fill="#e8ecf7" text-anchor="middle">src/tools.js</text>
+  <text x="485" y="193" fill="#93a0bd" text-anchor="middle" font-size="11">14 tools · 3 resources · 2 prompts</text>
+  <rect x="380" y="212" width="210" height="44" rx="8" fill="#18213a"/>
+  <text x="485" y="230" fill="#e8ecf7" text-anchor="middle">src/store.js</text>
+  <text x="485" y="247" fill="#93a0bd" text-anchor="middle" font-size="11">data/lifeos.json</text>
+
+  <!-- ui -->
+  <path d="M610 158 L660 158" fill="none" stroke="#7fdcff" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="660" y="96" width="176" height="124" rx="12" fill="#142046" stroke="#2c3a66"/>
+  <text x="748" y="124" fill="#fff" text-anchor="middle" font-weight="600">Web UI (/)</text>
+  <text x="748" y="148" fill="#93a0bd" text-anchor="middle">voice device</text>
+  <text x="748" y="168" fill="#93a0bd" text-anchor="middle">live dashboard</text>
+  <text x="748" y="188" fill="#93a0bd" text-anchor="middle">live MCP traffic (SSE)</text>
+</svg>

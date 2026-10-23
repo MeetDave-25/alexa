@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#05070f" />
+  <title>LifeOS for Alexa+</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="LifeOS home">
+      <img src="/icon.svg" alt="" width="30" height="30" />
+      <span>LifeOS</span><em>for Alexa+</em>
+    </a>
+    <div class="top-right">
+      <span class="conn" id="conn" title="LifeOS is connected to Alexa+ over MCP">
+        <span class="conn-dot"></span><span id="conn-text">Connecting…</span>
+      </span>
+      <button class="icon-btn" id="dev-toggle" aria-expanded="false" aria-controls="dev" title="Developer view (D)">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg>
+        <span>MCP</span><span class="beat" id="beat"></span>
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ============ Alexa+ stage ============ -->
+    <section class="stage" id="stage" data-mode="empty" aria-label="Talk to Alexa">
+      <div class="orb-wrap">
+        <canvas id="orb" width="520" height="520" aria-hidden="true"></canvas>
+        <div class="orb-state" id="orb-state" aria-live="polite">Tap the mic or press <kbd>Space</kbd></div>
+      </div>
+
+      <div class="hello" id="hello">
+        <p class="eyebrow" id="today-label"></p>
+        <h1 id="greeting">Hi there.</h1>
+        <p class="sub">I'm Alexa, connected to your LifeOS. Ask me anything about your day, or try one of these:</p>
+        <div class="starters" id="starters"></div>
+      </div>
+
+      <div class="thread" id="thread" aria-live="polite"></div>
+
+      <div class="dock">
+        <div class="chips" id="chips" aria-label="Suggestions"></div>
+        <form class="composer" id="composer">
+          <button type="button" class="mic" id="mic" aria-label="Hold to talk to Alexa">
+            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z"/></svg>
+          </button>
+          <input id="input" autocomplete="off" aria-label="Message Alexa" placeholder="Ask Alexa… “remind me to call the bank tomorrow”" />
+          <button type="button" class="icon-btn ghost" id="tts" aria-pressed="true" title="Spoken replies on">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M3 10v4h4l5 4V6L7 10H3Zm13.5 2A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4ZM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6Z"/></svg>
+          </button>
+          <button type="submit" class="send" aria-label="Send">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ LifeOS panel ============ -->
+    <aside class="life" aria-label="Your LifeOS">
+      <div class="summary">
+        <div class="ring-stat">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--c1)"/><stop offset="1" stop-color="var(--c2)"/></linearGradient></defs>
+            <circle cx="60" cy="60" r="50" class="ring-bg"/>
+            <circle cx="60" cy="60" r="50" class="ring-fg" id="day-ring"/>
+          </svg>
+          <div class="ring-num"><b id="day-pct">0%</b><small>day done</small></div>
+        </div>
+        <div class="stats">
+          <div class="stat"><b id="s-tasks">–</b><span>due today</span></div>
+          <div class="stat"><b id="s-habits">–</b><span>habits done</span></div>
+          <div class="stat"><b id="s-streak">–</b><span>best streak</span></div>
+          <div class="stat"><b id="s-mood">–</b><span>mood today</span></div>
+        </div>
+      </div>
+
+      <section class="block">
+        <header><h2>Today</h2><span class="count" id="c-today"></span></header>
+        <ul class="tasks" id="tasks-today"></ul>
+        <details class="later">
+          <summary>Coming up <span class="count" id="c-up"></span></summary>
+          <ul class="tasks" id="tasks-upcoming"></ul>
+        </details>
+      </section>
+
+      <section class="block">
+        <header><h2>Habits</h2><span class="hint">Tap to log</span></header>
+        <div class="habits" id="habits"></div>
+      </section>
+
+      <section class="block">
+        <header><h2>Goals</h2></header>
+        <ul class="goals" id="goals"></ul>
+      </section>
+
+      <section class="block split">
+        <div>
+          <header><h2>Mood</h2><span class="hint">7 days</span></header>
+          <div class="mood" id="mood"></div>
+        </div>
+        <div>
+          <header><h2>Journal</h2></header>
+          <blockquote class="journal" id="journal"></blockquote>
+        </div>
+      </section>
+
+      <button class="reset" id="reset">↺ Reset demo data</button>
+    </aside>
+  </main>
+
+  <!-- ============ Developer drawer ============ -->
+  <aside class="dev" id="dev" aria-label="MCP developer view" hidden>
+    <header class="dev-head">
+      <div>
+        <h2>Under the hood</h2>
+        <p>Every JSON-RPC message on <code>POST /mcp</code>. Includes traffic from MCP Inspector and real Alexa+ devices.</p>
+      </div>
+      <button class="icon-btn ghost" id="dev-close" aria-label="Close developer view">✕</button>
+    </header>
+    <dl class="facts" id="facts"></dl>
+    <details class="toolbox">
+      <summary>Tools exposed <span class="count" id="tool-count"></span></summary>
+      <ul id="tool-list"></ul>
+    </details>
+    <div class="log-head"><h3>Live traffic</h3><button class="link" id="clear">Clear</button></div>
+    <ol class="log" id="log"></ol>
+  </aside>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <canvas class="confetti" id="confetti" aria-hidden="true"></canvas>
+
+  <script src="/app.js" type="module"></script>
+</body>
+</html>
