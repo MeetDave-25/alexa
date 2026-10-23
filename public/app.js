@@ -101,6 +101,9 @@ function setState(s) {
   $('orb-state').innerHTML = chat ? (s === 'idle' ? 'Alexa' : STATE_LABEL[s]) : STATE_LABEL[s];
 }
 
+// Hook for scripted demo recordings to drive the orb while pre-rendered voices play.
+window.__lifeos = { setState, level: (v) => orb.level(v) };
+
 // =====================================================================
 // Voice out
 // =====================================================================
