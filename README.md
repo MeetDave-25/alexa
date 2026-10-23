@@ -7,6 +7,12 @@ The repo also has a **simulated Alexa+ experience** (a web app with voice in and
 > "Alexa, what's my day look like?"
 > *"Good morning, Alex. You have 2 tasks due today, and the big one is Submit Alexa+ hackathon demo. 1 task is overdue… Your meditate streak is at 7 days — keep it going."*
 
+![LifeOS for Alexa+: a daily briefing and habit streak shown as visual cards](docs/screenshots/2-briefing.png)
+
+| Home | Mood & goals | MCP under the hood |
+|---|---|---|
+| ![Home screen](docs/screenshots/1-home.png) | ![Mood and goal cards](docs/screenshots/3-mood-goals.png) | ![MCP developer drawer](docs/screenshots/4-mcp-drawer.png) |
+
 ![architecture](docs/architecture.svg)
 
 ---
