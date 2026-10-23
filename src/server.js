@@ -3,7 +3,7 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize, resolve } from 'node:path';
 import { handleMcp, traffic, sessionCount, LATEST_PROTOCOL_VERSION } from './mcp.js';
-import { respond, discover, plannerName, runTool } from './agent.js';
+import { respond, discover, plannerName, plannerLabel, runTool } from './agent.js';
 import { load, reset } from './store.js';
 import { streak } from './tools.js';
 
@@ -77,7 +77,7 @@ const server = createServer(async (req, res) => {
       if (!name) return json(res, 400, { error: 'Missing tool name' });
       return json(res, 200, await runTool(SELF_URL, name, args));
     }
-    if (pathname === '/api/discover') return json(res, 200, { ...(await discover(SELF_URL)), planner: plannerName() });
+    if (pathname === '/api/discover') return json(res, 200, { ...(await discover(SELF_URL)), planner: plannerName(), plannerLabel: plannerLabel() });
     if (pathname === '/api/state') return json(res, 200, dashboardState());
     if (pathname === '/api/reset' && req.method === 'POST') {
       reset();
@@ -111,6 +111,6 @@ server.listen(PORT, HOST, () => {
   console.log(`  ─────────────────────────────────────────`);
   console.log(`  MCP endpoint     http://${HOST}:${PORT}/mcp   (Streamable HTTP, spec ${LATEST_PROTOCOL_VERSION})`);
   console.log(`  Alexa+ simulator http://localhost:${PORT}/`);
-  console.log(`  Planner          ${plannerName()}${plannerName() === 'rules' ? '  (set ANTHROPIC_API_KEY to let Claude pick tools)' : ''}`);
+  console.log(`  Planner          ${plannerLabel()}${plannerName() === 'rules' ? '  (set ANTHROPIC_API_KEY, or ALEXA_SIM_PLANNER=bedrock, to let a model pick tools)' : ''}`);
   console.log(`  Auth             ${process.env.LIFEOS_API_KEY ? 'Bearer token required' : 'open (set LIFEOS_API_KEY to require a bearer token)'}\n`);
 });

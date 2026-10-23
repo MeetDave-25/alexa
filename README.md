@@ -98,6 +98,22 @@ npm start
 
 The default model is `claude-opus-5-5` at low effort, to keep voice latency down. You can override it with `ALEXA_SIM_MODEL`. Server-side refusal fallbacks are enabled. If a Claude call fails, the simulator falls back to the rules planner for that turn.
 
+### Use Amazon Bedrock as the brain (optional, AWS)
+
+The simulator can also choose its tools with a model on **Amazon Bedrock**, through the [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html). It turns the live MCP `tools/list` into a Bedrock `toolConfig`, runs Bedrock's `tool_use` loop, and makes every tool call over MCP. The code is `planWithBedrock` in [src/agent.js](src/agent.js).
+
+1. In the AWS console, open **Amazon Bedrock → Model access** and enable the model, for example Amazon Nova Pro.
+2. Give the machine credentials, for example with `aws configure` or `aws sso login`. The IAM identity needs `bedrock:InvokeModel` on that model.
+3. Start the server with Bedrock as the planner:
+
+```bash
+ALEXA_SIM_PLANNER=bedrock AWS_REGION=us-east-1 BEDROCK_MODEL_ID=us.amazon.nova-pro-v1:0 npm start
+# PowerShell:
+# $env:ALEXA_SIM_PLANNER="bedrock"; $env:AWS_REGION="us-east-1"; $env:BEDROCK_MODEL_ID="us.amazon.nova-pro-v1:0"; npm start
+```
+
+The startup log, the MCP drawer and each reply's label show **Amazon Bedrock**. Any Bedrock model that supports tool use works, including Anthropic Claude on Bedrock. Set `BEDROCK_MODEL_ID` to choose it. If Bedrock is unreachable (no credentials or no model access), that turn falls back to the offline planner, and the label says **On-device**.
+
 ### Inspect it with the official MCP Inspector
 
 ```bash
@@ -146,7 +162,9 @@ docker run -p 3000:3000 -e LIFEOS_API_KEY=change-me -v lifeos-data:/app/data lif
 | `LIFEOS_USER_NAME` | `Alex` | Name used in briefings |
 | `ANTHROPIC_API_KEY` | *unset* | Turns on the Claude planner in the simulator |
 | `ALEXA_SIM_MODEL` | `claude-opus-5-5` | Model for the Claude planner |
-| `ALEXA_SIM_PLANNER` | auto | Set to `rules` to force the offline planner |
+| `ALEXA_SIM_PLANNER` | auto | `claude`, `bedrock` or `rules`. Unset: Claude if `ANTHROPIC_API_KEY` is set, else Bedrock if `BEDROCK_MODEL_ID` is set, else rules. |
+| `BEDROCK_MODEL_ID` | `us.amazon.nova-pro-v1:0` | Model for the Bedrock planner |
+| `AWS_REGION` | `us-east-1` | Region for Amazon Bedrock |
 
 ---
 

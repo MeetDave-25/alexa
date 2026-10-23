@@ -22,7 +22,8 @@ const check = (name, ok, detail = '') => {
   console.log(`${ok ? '  ✓' : '  ✗'} ${name}${!ok && detail ? `\n      ${detail}` : ''}`);
 };
 
-const H = (extra = {}) => ({ 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream', ...extra });
+const AUTH = process.env.LIFEOS_API_KEY ? { Authorization: `Bearer ${process.env.LIFEOS_API_KEY}` } : {};
+const H = (extra = {}) => ({ 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream', ...AUTH, ...extra });
 const post = (body, headers) => fetch(url, { method: 'POST', headers: H(headers), body: typeof body === 'string' ? body : JSON.stringify(body) });
 
 async function startServer() {
@@ -54,7 +55,7 @@ async function main() {
   check('advertises tools/resources/prompts', !!(init.result?.capabilities?.tools && init.result.capabilities.resources && init.result.capabilities.prompts));
   check('serverInfo has title + icons', !!(init.result?.serverInfo?.title && init.result.serverInfo.icons?.length));
 
-  const S = { 'MCP-Session-Id': sid, 'MCP-Protocol-Version': '2025-11-25' };
+  const S = { ...AUTH, 'MCP-Session-Id': sid, 'MCP-Protocol-Version': '2025-11-25' };
   res = await post({ jsonrpc: '2.0', method: 'notifications/initialized' }, S);
   check('notification → 202 Accepted, empty body', res.status === 202 && (await res.text()) === '');
 

@@ -94,6 +94,70 @@ async function planWithClaude(mcp, utterance, history) {
   return { speech: resultSpeech(calls.at(-1)?.result) || 'Done.', calls };
 }
 
+// ---------- Amazon Bedrock planner (Converse API) ----------
+// Any Bedrock model that supports tool use works; the default is Amazon Nova Pro via the US
+// cross-region inference profile. Credentials come from the standard AWS chain (aws configure, SSO, env).
+
+const BEDROCK_MODEL = process.env.BEDROCK_MODEL_ID || 'us.amazon.nova-pro-v1:0';
+let bedrock = null;
+
+async function getBedrock() {
+  if (bedrock) return bedrock;
+  const sdk = await import('@aws-sdk/client-bedrock-runtime');
+  bedrock = { sdk, client: new sdk.BedrockRuntimeClient({ region: process.env.AWS_REGION || 'us-east-1' }) };
+  return bedrock;
+}
+
+// MCP tool definitions → Bedrock toolConfig. Exported for tests.
+export function toBedrockTools(tools) {
+  return { tools: tools.map((t) => ({ toolSpec: { name: t.name, description: t.description, inputSchema: { json: t.inputSchema } } })) };
+}
+
+async function planWithBedrock(mcp, utterance, history) {
+  const { sdk, client } = await getBedrock();
+  const messages = [
+    ...history.slice(-6).map((h) => ({ role: h.role, content: [{ text: h.text }] })),
+    { role: 'user', content: [{ text: utterance }] },
+  ];
+  const calls = [];
+
+  for (let turn = 0; turn < 6; turn++) {
+    const response = await client.send(
+      new sdk.ConverseCommand({
+        modelId: BEDROCK_MODEL,
+        system: [{ text: SYSTEM_PROMPT + (mcp.instructions ? `\n\nLifeOS server instructions: ${mcp.instructions}` : '') }],
+        messages,
+        toolConfig: toBedrockTools(mcpTools),
+        inferenceConfig: { maxTokens: 1024 },
+      }),
+    );
+    const message = response.output?.message;
+    if (!message) return { speech: 'Sorry, I lost my train of thought.', calls };
+    messages.push(message);
+
+    const toolUses = message.content.filter((b) => b.toolUse).map((b) => b.toolUse);
+    if (response.stopReason !== 'tool_use' || !toolUses.length) {
+      const text = message.content.filter((b) => b.text).map((b) => b.text).join(' ').trim();
+      return { speech: text || resultSpeech(calls.at(-1)?.result) || 'Done.', calls };
+    }
+
+    const results = [];
+    for (const use of toolUses) {
+      const result = await mcp.callTool(use.name, use.input || {});
+      calls.push({ name: use.name, args: use.input || {}, result });
+      results.push({
+        toolResult: {
+          toolUseId: use.toolUseId,
+          content: [{ json: result.structuredContent ?? { text: resultSpeech(result) } }],
+          status: result.isError ? 'error' : 'success',
+        },
+      });
+    }
+    messages.push({ role: 'user', content: results });
+  }
+  return { speech: resultSpeech(calls.at(-1)?.result) || 'Done.', calls };
+}
+
 // ---------- offline rules planner ----------
 
 const DUE_RE = /\s+(?:by |on |for |due )?(today|tonight|tomorrow|this weekend|next week|in \d+ days?|(?:this |next |on )?(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday))\b/i;
@@ -202,9 +266,21 @@ async function planWithRules(mcp, utterance) {
 
 // ---------- entry point ----------
 
+// ALEXA_SIM_PLANNER = claude | bedrock | rules. Unset: Claude if ANTHROPIC_API_KEY is set,
+// else Bedrock if BEDROCK_MODEL_ID is set, else the offline rules.
 export function plannerName() {
-  return process.env.ANTHROPIC_API_KEY && process.env.ALEXA_SIM_PLANNER !== 'rules' ? 'claude' : 'rules';
+  const forced = process.env.ALEXA_SIM_PLANNER;
+  if (['claude', 'bedrock', 'rules'].includes(forced)) return forced;
+  if (process.env.ANTHROPIC_API_KEY) return 'claude';
+  if (process.env.BEDROCK_MODEL_ID) return 'bedrock';
+  return 'rules';
 }
+
+export function plannerLabel() {
+  return { claude: `Claude (${MODEL})`, bedrock: `Amazon Bedrock (${BEDROCK_MODEL})`, rules: 'On-device rules' }[plannerName()];
+}
+
+const PLANNERS = { claude: planWithClaude, bedrock: planWithBedrock };
 
 export async function respond(baseUrl, utterance, history = []) {
   const clean = utterance.replace(/^\s*(?:hey\s+)?alexa[,!]?\s*/i, '').replace(/^(?:ask|tell|open) life ?os (?:to |that |for )?/i, '').trim();
@@ -215,10 +291,10 @@ export async function respond(baseUrl, utterance, history = []) {
     mcp.drainLog(); // keep the trace to this utterance only
     let res;
     try {
-      res = planner === 'claude' ? await planWithClaude(mcp, clean, history) : await planWithRules(mcp, clean);
+      res = PLANNERS[planner] ? await PLANNERS[planner](mcp, clean, history) : await planWithRules(mcp, clean);
     } catch (err) {
-      if (planner !== 'claude' || err.code === 'SESSION_EXPIRED') throw err;
-      console.warn(`[agent] Claude planner failed (${err.message}); falling back to rules`);
+      if (!PLANNERS[planner] || err.code === 'SESSION_EXPIRED') throw err;
+      console.warn(`[agent] ${planner} planner failed (${err.name}: ${err.message}); falling back to rules`);
       res = { ...(await planWithRules(mcp, clean)), fallback: true };
     }
     return { ...res, trace: mcp.drainLog(), sessionId: mcp.sessionId, protocolVersion: mcp.protocolVersion };

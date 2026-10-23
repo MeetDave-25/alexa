@@ -157,7 +157,7 @@ async function ask(text) {
       const html = renderCard(c);
       if (html) reply.insertAdjacentHTML('afterend', html);
     }
-    turn.insertAdjacentHTML('beforeend', `<div class="meta">${data.calls.map((c) => `<span class="tool">${esc(c.name)}</span>`).join('')}<span>${data.planner === 'claude' ? 'Claude' : 'On-device'} · ${data.ms} ms · via MCP</span></div>`);
+    turn.insertAdjacentHTML('beforeend', `<div class="meta">${data.calls.map((c) => `<span class="tool">${esc(c.name)}</span>`).join('')}<span>${{ claude: 'Claude', bedrock: 'Amazon Bedrock', rules: 'On-device' }[data.planner] || data.planner} · ${data.ms} ms · via MCP</span></div>`);
     requestAnimationFrame(() => turn.querySelectorAll('.bar b[data-w]').forEach((b) => (b.style.width = b.dataset.w + '%')));
     history.push({ role: 'user', text }, { role: 'assistant', text: data.speech });
     speak(data.speech);
@@ -551,7 +551,7 @@ async function boot() {
       ['Transport', 'Streamable HTTP'],
       ['Server', `${d.serverInfo.title} ${d.serverInfo.version}`],
       ['Session', d.sessionId],
-      ['Planner', d.planner === 'claude' ? 'Claude (live tools/list)' : 'On-device rules'],
+      ['Planner', d.plannerLabel || d.planner],
       ['Endpoint', `${location.origin}/mcp`],
     ].map(([k, v]) => `<div><dt>${k}</dt><dd title="${esc(v)}">${esc(v)}</dd></div>`).join('');
     $('tool-count').textContent = d.tools.length;

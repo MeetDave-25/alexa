@@ -15,7 +15,8 @@
     "inspector": "npx @modelcontextprotocol/inspector"
   },
   "optionalDependencies": {
-    "@anthropic-ai/sdk": "^0.110.0"
+    "@anthropic-ai/sdk": "^0.110.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1156.0"
   },
   "license": "MIT"
 }
